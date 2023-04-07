@@ -20,17 +20,36 @@ class DataTransmitionSimulator():
         self.__qam = fundamental.QAM(self.num_symbols)
 
     def generate_data(self) -> np.ndarray :
+        """Generate data to transmit
+
+        Returns:
+            np.ndarray: an array with data to transmit
+        """        
         return np.random.randint(0, self.num_symbols, self.num_symbols_transmit)
 
-    def modulate_data(self, data) -> tuple:
+    def modulate_data(self, data : np.ndarray) -> tuple[np.ndarray,np.ndarray]:
         """Generate the modulated data for PSK and QAM
-        """        
+
+        Args:
+            data (np.ndarray): an array with the data to modulate
+
+        Returns:
+            tuple[np.ndarray,np.ndarray]: (array with QAM modulated data, array with PSK modulated data)
+        """                    
         psk_modulated_data = self.__psk.modulate(data)
         qam_modulated_data = self.__qam.modulate(data)
 
         return (qam_modulated_data, psk_modulated_data)
 
-    def __awgn_noise(self, noise : int):
+    def __awgn_noise(self, noise : int) -> np.ndarray :
+        """Generate White Gaussian Noise
+
+        Args:
+            noise (int): noise level in dB
+
+        Returns:
+            np.ndarray: array with noisy data to be added with another array
+        """    
         noise_power = 1 / dB2Linear(noise)
         n = randn_c(self.num_symbols_transmit)
         return n * np.sqrt(noise_power)
@@ -39,6 +58,8 @@ class DataTransmitionSimulator():
         return np.exp(1j * np.random.randn(self.num_symbols_transmit))
     
     def print_constellations(self):
+        """Display the constellations used for both QAM and PSK
+        """        
         print(self.__qam.symbols.real)
         plt.plot(self.__qam.symbols.real, self.__qam.symbols.imag, '.', label="QAM")
         plt.plot(self.__psk.symbols.real, self.__psk.symbols.imag, '.', label="PSK")
@@ -47,22 +68,33 @@ class DataTransmitionSimulator():
         plt.grid(True)
         plt.show()
     
-    def transmit_data(self, qam_modulated_data, psk_modulated_data, noise : int = 20) -> tuple:
+    def transmit_data(self, qam_modulated_data : np.ndarray, psk_modulated_data : np.ndarray, noise : int = 20) -> tuple [np.ndarray, np.ndarray]:
         """Transmit the generated data through a channel with AWGN
 
         Args:
+            qam_modulated_data (np.ndarray): Data already modulated with QAM
+            psk_modulated_data (np.ndarray): Data already modulated with PSK
             noise (int, optional): The noise to be applied to the data in dB. Defaults to 20dB.
 
         Returns:
-            tuple: (QAM ndarray data with noise, PSK ndarray with noise)
-        """    
+            tuple [np.ndarray, np.ndarray]: (QAM ndarray data with noise, PSK ndarray with noise)
+        """            
         channel_awg_noise = self.__awgn_noise(noise)
         noisy_qam = qam_modulated_data + channel_awg_noise
         noisy_psk = psk_modulated_data + channel_awg_noise
 
         return (noisy_qam, noisy_psk)
     
-    def demodulate(self, qam_data : np.ndarray, psk_data : np.ndarray):
+    def demodulate(self, qam_data : np.ndarray, psk_data : np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Demodulated data for PSK and QAM
+
+        Args:
+            qam_data (np.ndarray): Data to be demodulated with QAM
+            psk_data (np.ndarray): Data to be demodulated with PSK
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: (QAM data demodulated, PSK data demodulated)
+        """           
         qam_demodulated_data = self.__qam.demodulate(qam_data)
         psk_demodulated_data = self.__psk.demodulate(psk_data)
 
