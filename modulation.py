@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import ndarray
 import matplotlib.pyplot as plt
 from pyphysim.modulators import fundamental
 from pyphysim.util.conversion import dB2Linear
@@ -19,36 +20,36 @@ class DataTransmitionSimulator():
         self.__psk = fundamental.PSK(self.num_symbols)
         self.__qam = fundamental.QAM(self.num_symbols)
 
-    def generate_data(self) -> np.ndarray :
+    def generate_data(self) -> ndarray :
         """Generate data to transmit
 
         Returns:
-            np.ndarray: an array with data to transmit
+            ndarray: an array with data to transmit
         """        
         return np.random.randint(0, self.num_symbols, self.num_symbols_transmit)
 
-    def modulate_data(self, data : np.ndarray) -> tuple[np.ndarray,np.ndarray]:
+    def modulate_data(self, data : ndarray) -> tuple[ndarray,ndarray]:
         """Generate the modulated data for PSK and QAM
 
         Args:
-            data (np.ndarray): an array with the data to modulate
+            data (ndarray): an array with the data to modulate
 
         Returns:
-            tuple[np.ndarray,np.ndarray]: (array with QAM modulated data, array with PSK modulated data)
+            tuple[ndarray,ndarray]: (array with QAM modulated data, array with PSK modulated data)
         """                    
         psk_modulated_data = self.__psk.modulate(data)
         qam_modulated_data = self.__qam.modulate(data)
 
         return (qam_modulated_data, psk_modulated_data)
 
-    def __awgn_noise(self, noise : int) -> np.ndarray :
+    def __awgn_noise(self, noise : int) -> ndarray :
         """Generate White Gaussian Noise
 
         Args:
             noise (int): noise level in dB
 
         Returns:
-            np.ndarray: array with noisy data to be added with another array
+            ndarray: array with noisy data to be added with another array
         """    
         noise_power = 1 / dB2Linear(noise)
         n = randn_c(self.num_symbols_transmit)
@@ -68,16 +69,16 @@ class DataTransmitionSimulator():
         plt.grid(True)
         plt.show()
     
-    def transmit_data(self, qam_modulated_data : np.ndarray, psk_modulated_data : np.ndarray, noise : int = 20) -> tuple [np.ndarray, np.ndarray]:
+    def transmit_data(self, qam_modulated_data : ndarray, psk_modulated_data : ndarray, noise : int = 20) -> tuple [ndarray, ndarray]:
         """Transmit the generated data through a channel with AWGN
 
         Args:
-            qam_modulated_data (np.ndarray): Data already modulated with QAM
-            psk_modulated_data (np.ndarray): Data already modulated with PSK
+            qam_modulated_data (ndarray): Data already modulated with QAM
+            psk_modulated_data (ndarray): Data already modulated with PSK
             noise (int, optional): The noise to be applied to the data in dB. Defaults to 20dB.
 
         Returns:
-            tuple [np.ndarray, np.ndarray]: (QAM ndarray data with noise, PSK ndarray with noise)
+            tuple [ndarray, ndarray]: (QAM ndarray data with noise, PSK ndarray with noise)
         """            
         channel_awg_noise = self.__awgn_noise(noise)
         noisy_qam = qam_modulated_data + channel_awg_noise
@@ -85,15 +86,15 @@ class DataTransmitionSimulator():
 
         return (noisy_qam, noisy_psk)
     
-    def demodulate(self, qam_data : np.ndarray, psk_data : np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def demodulate(self, qam_data : ndarray, psk_data : ndarray) -> tuple[ndarray, ndarray]:
         """Demodulated data for PSK and QAM
 
         Args:
-            qam_data (np.ndarray): Data to be demodulated with QAM
-            psk_data (np.ndarray): Data to be demodulated with PSK
+            qam_data (ndarray): Data to be demodulated with QAM
+            psk_data (ndarray): Data to be demodulated with PSK
 
         Returns:
-            tuple[np.ndarray, np.ndarray]: (QAM data demodulated, PSK data demodulated)
+            tuple[ndarray, ndarray]: (QAM data demodulated, PSK data demodulated)
         """           
         qam_demodulated_data = self.__qam.demodulate(qam_data)
         psk_demodulated_data = self.__psk.demodulate(psk_data)
@@ -101,7 +102,17 @@ class DataTransmitionSimulator():
         return (qam_demodulated_data, psk_demodulated_data)
 
 
-    def symbol_error_rate(self, data, qam_demodulated_data, psk_demodulated_data):
+    def symbol_error_rate(self, data : ndarray, qam_demodulated_data : ndarray, psk_demodulated_data : ndarray) -> tuple[float,float]:
+        """Calculate the Symbol Error Rate for QAM and PSK
+
+        Args:
+            data (ndarray): The original data
+            qam_demodulated_data (ndarray): QAM demodulated data
+            psk_demodulated_data (ndarray): PSK damodutaled data
+
+        Returns:
+            tuple[float,float]: (SER for QAM, SER for PSK)
+        """                
         return (1 - sum(qam_demodulated_data == data) / self.num_symbols_transmit, 1 - sum(psk_demodulated_data == data) / self.num_symbols_transmit)
         # qam_error = sum(qam_demodulated_data != data)
         # psk_error = sum(psk_demodulated_data != data)
@@ -113,7 +124,16 @@ class DataTransmitionSimulator():
         # psk_simulate_results.add_new_result("symbol_error_rate", Result.RATIOTYPE, values=psk_error, total=self.num_symbols_transmit)
         # return (qam_simulate_results, psk_simulate_results)
     
-    def simulate(self, num_rep : int = 5000, noise = 20):
+    def simulate(self, num_rep : int = 5000, noise = 20) -> tuple[float,float]:
+        """Simulate multiple transmission
+
+        Args:
+            num_rep (int, optional): Number of transmissions to simulate. Defaults to 5000.
+            noise (int, optional): Noise in dB. Defaults to 20dB.
+
+        Returns:
+            tuple[float,float]: (average SER for QAM, average SER for PSK)
+        """          
         qam_ser = 0
         psk_ser = 0
 
@@ -128,7 +148,17 @@ class DataTransmitionSimulator():
 
         return (qam_ser/num_rep, psk_ser/num_rep)
     
-    def simulate_range_noise(self, initial_noise, final_noise, num_rep : int = 5000):
+    def simulate_range_noise(self, initial_noise : int, final_noise : int, num_rep : int = 5000) -> tuple[list[float],list[float]]:
+        """Simulate multiple transmission with a range of noise values
+
+        Args:
+            initial_noise (int): Minimium accepted noise value
+            final_noise (int): Maximum accepeted noise value
+            num_rep (int, optional): Number of repetitions. Defaults to 5000.
+
+        Returns:
+            tuple[list[float],list[float]]: (list of SER values for each noise value for QAM, list of SER values for each noise value for PSK)
+        """        
         qam_ser_values = []
         psk_ser_values = []
 
@@ -140,10 +170,27 @@ class DataTransmitionSimulator():
         return (qam_ser_values, psk_ser_values)
     
 
-    def ser_teoretical(self, noise : int = 20):
+    def ser_teoretical(self, noise : int = 20) -> tuple[float, float]:
+        """Generate teoretical SER values
+
+        Args:
+            noise (int, optional): Noise in dB. Defaults to 20dB.
+
+        Returns:
+            tuple[float, float]: (SER value for QAM, SER value for PSK)
+        """        
         return (self.__qam.calcTheoreticalSER(noise),self.__psk.calcTheoreticalSER(noise))
     
-    def ser_teoretical_noise_range(self, initial_noise, final_noise):
+    def ser_teoretical_noise_range(self, initial_noise : int, final_noise : int) -> tuple[list[float],list[float]]:
+        """Generate a list with teoretical SER values for QAM and PSK
+
+        Args:
+            initial_noise (int): Minimium accepted noise value
+            final_noise (int): Maximum accepeted noise value
+
+        Returns:
+            tuple[list[float],list[float]]: (list of SER values for each noise value for QAM, list of SER values for each noise value for PSK)
+        """        
         qam_ser_values = []
         psk_ser_values = []
         for noise in range(initial_noise, final_noise):
@@ -153,7 +200,18 @@ class DataTransmitionSimulator():
         
         return (qam_ser_values,psk_ser_values)
     
-    def ser_plot(self, qam_ser, qam_ser_teoretical, psk_ser, psk_ser_teoretical, inital_noise, final_noise):
+    def ser_plot(self, qam_ser:list[float], qam_ser_teoretical:list[float], psk_ser:list[float], psk_ser_teoretical:list[float], inital_noise:int, final_noise:int):
+        """Plot the SER values comparing the teoretical with simulated one
+
+        Args:
+            qam_ser (list[float]): List SER for the QAM simulation
+            qam_ser_teoretical (list[float]): List teoritical SER values for QAM
+            psk_ser (list[float]): List SER for the PSK simulation
+            psk_ser_teoretical (list[float]): List teoritical SER values for PSK
+            initial_noise (int): Minimium accepted noise value
+            final_noise (int): Maximum accepeted noise value
+        """        
+        
         noise_list = [noise for noise in range(inital_noise, final_noise)]
 
         figure, axis = plt.subplots(1, 2)
