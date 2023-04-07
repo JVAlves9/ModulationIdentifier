@@ -108,10 +108,10 @@ class DataTransmitionSimulator():
         return (qam_ser_values, psk_ser_values)
     
 
-    def ser_teoretical_value(self, noise : int = 20):
+    def ser_teoretical(self, noise : int = 20):
         return (self.__qam.calcTheoreticalSER(noise),self.__psk.calcTheoreticalSER(noise))
     
-    def ser_teoretical_value_noise_range(self, initial_noise, final_noise):
+    def ser_teoretical_noise_range(self, initial_noise, final_noise):
         qam_ser_values = []
         psk_ser_values = []
         for noise in range(initial_noise, final_noise):
