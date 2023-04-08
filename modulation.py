@@ -194,7 +194,7 @@ class DataTransmitionSimulator():
         qam_ser_values = []
         psk_ser_values = []
         for noise in range(initial_noise, final_noise):
-            qam_ser, psk_ser = self.ser_teoretical_value(noise)
+            qam_ser, psk_ser = self.ser_teoretical(noise)
             qam_ser_values.append(qam_ser)
             psk_ser_values.append(psk_ser)
         
@@ -231,9 +231,9 @@ class DataTransmitionSimulator():
 
 if __name__ == "__main__":
     cla = DataTransmitionSimulator(64,64)
-    print(f"Simulated SER value : {cla.simulate()}\nTeoretical SER valeu : {cla.ser_teoretical_value()}")
+    print(f"Simulated SER value : {cla.simulate()}\nTeoretical SER valeu : {cla.ser_teoretical()}")
     qam_ser, psk_ser = cla.simulate_range_noise(-5,15,2000)
-    qam_ser_ter, psk_ser_ter = cla.ser_teoretical_value_noise_range(-5,15)
+    qam_ser_ter, psk_ser_ter = cla.ser_teoretical_noise_range(-5,15)
     cla.ser_plot(
         qam_ser,
         qam_ser_ter,
