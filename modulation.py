@@ -108,10 +108,10 @@ class DataTransmitionSimulator():
         Args:
             data (ndarray): The original data
             qam_demodulated_data (ndarray): QAM demodulated data
-            psk_demodulated_data (ndarray): PSK damodutaled data
+            psk_demodulated_data (ndarray): PSK demodulated data
 
         Returns:
-            tuple[float,float]: (SER for QAM, SER for PSK)
+            tuple[float, float]: (SER for QAM, SER for PSK)
         """                
         return (1 - sum(qam_demodulated_data == data) / self.num_symbols_transmit, 1 - sum(psk_demodulated_data == data) / self.num_symbols_transmit)
         # qam_error = sum(qam_demodulated_data != data)
@@ -132,7 +132,7 @@ class DataTransmitionSimulator():
             noise (int, optional): Noise in dB. Defaults to 20dB.
 
         Returns:
-            tuple[float,float]: (average SER for QAM, average SER for PSK)
+            tuple[float, float]: (average SER for QAM, average SER for PSK)
         """          
         qam_ser = 0
         psk_ser = 0
@@ -149,15 +149,15 @@ class DataTransmitionSimulator():
         return (qam_ser/num_rep, psk_ser/num_rep)
     
     def simulate_range_noise(self, initial_noise : int, final_noise : int, num_rep : int = 5000) -> tuple[list[float],list[float]]:
-        """Simulate multiple transmission with a range of noise values
+        """Simulate multiple transmissions with a range of noise values
 
         Args:
-            initial_noise (int): Minimium accepted noise value
-            final_noise (int): Maximum accepeted noise value
+            initial_noise (int): Minimum accepted noise value
+            final_noise (int): Maximum accepted noise value
             num_rep (int, optional): Number of repetitions. Defaults to 5000.
 
         Returns:
-            tuple[list[float],list[float]]: (list of SER values for each noise value for QAM, list of SER values for each noise value for PSK)
+            tuple[list[float], list[float]]: (list of SER values for each noise value for QAM, list of SER values for each noise value for PSK)
         """        
         qam_ser_values = []
         psk_ser_values = []
@@ -170,8 +170,8 @@ class DataTransmitionSimulator():
         return (qam_ser_values, psk_ser_values)
     
 
-    def ser_teoretical(self, noise : int = 20) -> tuple[float, float]:
-        """Generate teoretical SER values
+    def ser_theoretical(self, noise : int = 20) -> tuple[float, float]:
+        """Generate theoretical SER values
 
         Args:
             noise (int, optional): Noise in dB. Defaults to 20dB.
@@ -181,48 +181,48 @@ class DataTransmitionSimulator():
         """        
         return (self.__qam.calcTheoreticalSER(noise),self.__psk.calcTheoreticalSER(noise))
     
-    def ser_teoretical_noise_range(self, initial_noise : int, final_noise : int) -> tuple[list[float],list[float]]:
-        """Generate a list with teoretical SER values for QAM and PSK
+    def ser_theoretical_noise_range(self, initial_noise : int, final_noise : int) -> tuple[list[float],list[float]]:
+        """Generate a list with theoretical SER values for QAM and PSK
 
         Args:
-            initial_noise (int): Minimium accepted noise value
-            final_noise (int): Maximum accepeted noise value
+            initial_noise (int): Minimum accepted noise value
+            final_noise (int): Maximum accepted noise value
 
         Returns:
-            tuple[list[float],list[float]]: (list of SER values for each noise value for QAM, list of SER values for each noise value for PSK)
+            tuple[list[float], list[float]]: (list of SER values for each noise value for QAM, list of SER values for each noise value for PSK)
         """        
         qam_ser_values = []
         psk_ser_values = []
         for noise in range(initial_noise, final_noise):
-            qam_ser, psk_ser = self.ser_teoretical(noise)
+            qam_ser, psk_ser = self.ser_theoretical(noise)
             qam_ser_values.append(qam_ser)
             psk_ser_values.append(psk_ser)
         
         return (qam_ser_values,psk_ser_values)
     
-    def ser_plot(self, qam_ser:list[float], qam_ser_teoretical:list[float], psk_ser:list[float], psk_ser_teoretical:list[float], inital_noise:int, final_noise:int):
-        """Plot the SER values comparing the teoretical with simulated one
+    def ser_plot(self, qam_ser:list[float], qam_ser_theoretical:list[float], psk_ser:list[float], psk_ser_theoretical:list[float], inital_noise:int, final_noise:int):
+        """Plot the SER values comparing the theoretical with the simulated one
 
         Args:
             qam_ser (list[float]): List SER for the QAM simulation
-            qam_ser_teoretical (list[float]): List teoritical SER values for QAM
+            qam_ser_theoretical (list[float]): List theoretical SER values for QAM
             psk_ser (list[float]): List SER for the PSK simulation
-            psk_ser_teoretical (list[float]): List teoritical SER values for PSK
-            initial_noise (int): Minimium accepted noise value
-            final_noise (int): Maximum accepeted noise value
+            psk_ser_theoretical (list[float]): List theoretical SER values for PSK
+            initial_noise (int): Minimum accepted noise value
+            final_noise (int): Maximum accepted noise value
         """        
         
         noise_list = [noise for noise in range(inital_noise, final_noise)]
 
         figure, axis = plt.subplots(1, 2)
         axis[0].plot(noise_list, qam_ser, label="QAM")
-        axis[0].plot(noise_list, qam_ser_teoretical, '.', label="QAM Teoretical")
+        axis[0].plot(noise_list, qam_ser_theoretical, '.', label="QAM theoretical")
         axis[0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),
           fancybox=True, shadow=True, ncol=5)
         axis[0].grid(True)
 
         axis[1].plot(noise_list, psk_ser, label="PSK")
-        axis[1].plot(noise_list, psk_ser_teoretical, '.', label="PSK Teoretical")
+        axis[1].plot(noise_list, psk_ser_theoretical, '.', label="PSK theoretical")
         axis[1].legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),
           fancybox=True, shadow=True, ncol=5)
         axis[1].grid(True)
@@ -231,9 +231,9 @@ class DataTransmitionSimulator():
 
 if __name__ == "__main__":
     cla = DataTransmitionSimulator(64,64)
-    print(f"Simulated SER value : {cla.simulate()}\nTeoretical SER valeu : {cla.ser_teoretical()}")
+    print(f"Simulated SER value : {cla.simulate()}\ntheoretical SER value : {cla.ser_theoretical()}")
     qam_ser, psk_ser = cla.simulate_range_noise(-5,15,2000)
-    qam_ser_ter, psk_ser_ter = cla.ser_teoretical_noise_range(-5,15)
+    qam_ser_ter, psk_ser_ter = cla.ser_theoretical_noise_range(-5,15)
     cla.ser_plot(
         qam_ser,
         qam_ser_ter,
