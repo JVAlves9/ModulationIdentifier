@@ -5,7 +5,7 @@ from pyphysim.modulators import fundamental
 from pyphysim.util.conversion import dB2Linear
 from pyphysim.util.misc import randn_c
 
-class DataTransmitionSimulator():
+class DataTransmissionSimulator():
     """Class used to generate all data to transmit, as well as  the modulation objects
     """    
     def __init__(self, num_symbols : int, num_symbols_transmit : int) -> None:
@@ -230,7 +230,7 @@ class DataTransmitionSimulator():
 
 
 if __name__ == "__main__":
-    cla = DataTransmitionSimulator(64,64)
+    cla = DataTransmissionSimulator(64,64)
     print(f"Simulated SER value : {cla.simulate()}\ntheoretical SER value : {cla.ser_theoretical()}")
     qam_ser, psk_ser = cla.simulate_range_noise(-5,15,2000)
     qam_ser_ter, psk_ser_ter = cla.ser_theoretical_noise_range(-5,15)
